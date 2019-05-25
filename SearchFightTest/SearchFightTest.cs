@@ -17,7 +17,7 @@ namespace SearchFightTest
     public class SearchFightTest
     {
         [TestMethod]
-        public void GetSearchResults_ShouldNotReturnResultsFromGoogleOrBing()
+        public void GetSearchResults_ShouldNotReturnResultsFromAnySearchEngine()
         {
             //Arrange
             IWebRequest webRequest = new WebRequestImplementation();
@@ -48,7 +48,7 @@ namespace SearchFightTest
             var result = searchExecutor.ExecuteSearch();
 
             //Assert
-            result.Should().HaveElementAt(0, "java: Google: 670000000 Bing: 0");
+            result.Should().HaveElementAt(0, "java: Google: 670000000 Bing: 0 Yahoo: 0");
         }
 
         [TestMethod]
@@ -67,7 +67,27 @@ namespace SearchFightTest
             var result = searchExecutor.ExecuteSearch();
 
             //Assert
-            result.Should().HaveElementAt(0, "java: Google: 0 Bing: 23400000");
+            result.Should().HaveElementAt(0, "java: Google: 0 Bing: 23400000 Yahoo: 0");
+        }
+
+        [TestMethod]
+        public void GetSearchResults_ShouldReturnResultsFromYahooForJava()
+        {
+            //Arrange
+            string[] keywords = new string[1] { "java" };
+
+            var mockedWebRequest = new Mock<IWebRequest>();
+            mockedWebRequest
+            .Setup(c => c.RequestResponse("https://search.yahoo.com/search?p=java"))
+            .Returns("<html><body><div class='compPagination'><span>670,000,000 resultados</span></div></body></html>");
+
+            SearchExecutor searchExecutor = new SearchExecutor(mockedWebRequest.Object, keywords);
+
+            //Act
+            var result = searchExecutor.ExecuteSearch();
+
+            //Assert
+            result.Should().HaveElementAt(0, "java: Google: 0 Bing: 0 Yahoo: 670000000");
         }
 
         [TestMethod]
@@ -105,7 +125,7 @@ namespace SearchFightTest
             IWebRequest webRequest = new WebRequestImplementation();
             SearchExecutor searchExecutor = new SearchExecutor(webRequest);
             Report googleReport1 = new Report() { SearchEngine = SearchEngineEnum.Google.ToString(), Keyword = ".net", Quantity = 999 };
-            Report googleReport2 = new Report() { SearchEngine = SearchEngineEnum.Google.ToString(), Keyword = ".java", Quantity = 758 };
+            Report googleReport2 = new Report() { SearchEngine = SearchEngineEnum.Google.ToString(), Keyword = "java", Quantity = 758 };
 
             //Act
             searchExecutor.reports.Add(googleReport1);
@@ -123,7 +143,7 @@ namespace SearchFightTest
             IWebRequest webRequest = new WebRequestImplementation();
             SearchExecutor searchExecutor = new SearchExecutor(webRequest);
             Report bingReport1 = new Report() { SearchEngine = SearchEngineEnum.Bing.ToString(), Keyword = ".net", Quantity = 120 };
-            Report bingReport2 = new Report() { SearchEngine = SearchEngineEnum.Bing.ToString(), Keyword = ".java", Quantity = 95 };
+            Report bingReport2 = new Report() { SearchEngine = SearchEngineEnum.Bing.ToString(), Keyword = "java", Quantity = 95 };
 
             //Act
             searchExecutor.reports.Add(bingReport1);
@@ -133,7 +153,26 @@ namespace SearchFightTest
             //Assert
             result.Should().Be("Bing winner: .net");
         }
- 
+
+        [TestMethod]
+        public void CalculateWinnerPerSearchEngine_ShouldReturnDotNetAsWinnerForYahoo()
+        {
+            //Arrange
+            IWebRequest webRequest = new WebRequestImplementation();
+            SearchExecutor searchExecutor = new SearchExecutor(webRequest);
+            Report yahooReport1 = new Report() { SearchEngine = SearchEngineEnum.Yahoo.ToString(), Keyword = ".net", Quantity = 65 };
+            Report yahooReport2 = new Report() { SearchEngine = SearchEngineEnum.Yahoo.ToString(), Keyword = "java", Quantity = 50 };
+
+            //Act
+            searchExecutor.reports.Add(yahooReport1);
+            searchExecutor.reports.Add(yahooReport2);
+            var result = searchExecutor.CalculateWinnerPerSearchEngine(SearchEngineEnum.Yahoo);
+
+            //Assert
+            result.Should().Be("Yahoo winner: .net");
+        }
+
+
         [TestMethod]
         public void CalculateTotalWinner_ShouldReturnDotNetAsWinner()
         {

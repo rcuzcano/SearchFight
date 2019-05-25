@@ -2,6 +2,7 @@
 {
     public enum SearchEngineEnum {
         Google,
-        Bing
+        Bing,
+        Yahoo
     };
 }

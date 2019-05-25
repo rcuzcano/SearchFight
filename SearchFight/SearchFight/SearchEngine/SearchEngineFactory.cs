@@ -17,6 +17,9 @@ namespace SearchFight.SearchEngine
                 case SearchEngineEnum.Bing:
                     engine = new BingSearch(webRequest);
                     break;
+                case SearchEngineEnum.Yahoo:
+                    engine = new YahooSearch(webRequest);
+                    break;
             }
 
             return engine;

@@ -48,6 +48,7 @@
   <ItemGroup>
     <Compile Include="SearchEngine\BingSearch.cs" />
     <Compile Include="Enumerables\SearchEngineEnum.cs" />
+    <Compile Include="SearchEngine\YahooSearch.cs" />
     <Compile Include="SearchEngine\GoogleSearch.cs" />
     <Compile Include="SearchEngine\ISearchEngine.cs" />
     <Compile Include="Helpers\IWebRequest.cs" />
